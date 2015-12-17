@@ -30,7 +30,7 @@ exports.readListOfUrls = function(callback){
   var urlArray;
   // read from the list
   // Read the contents of the file into memory.
-  fs.readFile(exports.path.list, function (err, logData) {
+  fs.readFile(exports.paths.list, function (err, logData) {
 
     // If an error occurred, throwing it will
     // display the exception and kill our app.
