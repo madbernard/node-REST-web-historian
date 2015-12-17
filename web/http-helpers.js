@@ -8,6 +8,7 @@ exports.headers = headers = {
   "access-control-allow-headers": "content-type, accept",
   "access-control-max-age": 10, // Seconds.
   'Content-Type': "text/html"
+  //MDN says this comes from forms application/x-www-form-urlencoded (was text/html)
 };
 
 exports.serveAssets = function(res, asset, callback) {
