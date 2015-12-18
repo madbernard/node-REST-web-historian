@@ -45,12 +45,36 @@ exports.readListOfUrls = function(callback){
 
     // pass the results of the read to the callback as a parameter of the callback
     callback(urlArray);
+
   });
 };
 
-exports.isUrlInList = function(url){
-  return _.contains(urlArray, url);
+exports.isUrlInList = function(url, callback){
+ var urlArray;
+
+  // read from the list
+  // Read the contents of the file into memory.
+  fs.readFile(exports.paths.list, function (err, logData) {
+    var isFound;
+    // If an error occurred, throwing it will
+    // display the exception and kill our app.
+    if (err) throw err;
+
+    // logData is a Buffer, convert to string.
+    var text = logData.toString();
+    console.log(text);
+
+    urlArray = text.split('\n');
+    console.log(urlArray);
+    isFound = _.contains(urlArray, url);
+    callback(isFound);
+  });
+  // return _.contains(urlArray, url);
 };
+
+// archive.isUrlInList(collectedData, function(isFound){
+//   console.log('Is this working???');
+// });
 
 exports.addUrlToList = function(data){
   var plusNewLine = data + "\n";
