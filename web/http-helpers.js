@@ -14,6 +14,15 @@ exports.serveAssets = function(res, asset, callback) {
   // Write some code here that helps serve up your static files!
   // (Static files are things like html (yours or archived from others...),
   // css, or anything that doesn't change often.)
+
+  // look for the requested files, first in ./public
+  fs.access(path, fs.F_OK, function (err) {
+    console.log(err ? 'this process can\'t see a file there' : 'can find');
+  });
+    // then in ./archives
+
+  // find that read file names thing
+    // if req.url = / or index.html or index.htm, serve index
 };
 
 
