@@ -9,8 +9,24 @@ exports.handleRequest = function (req, res) {
 
   var url = req.url;
   var pathObjUrl = path.parse(url);
-  var pageRequested = pathObjUrl.base;
-  var mimeType = pathObjUrl.ext;
+  var pageRequested;
+  if (url === '/') {
+    pageRequested = 'index.html';
+  }
+  else {
+    //console.log(pathObjUrl, '<-- this is pathObjUrl, look at base');
+    pageRequested = pathObjUrl.base;
+  }
+  var mimeTypeIn = path.parse(pageRequested).ext.slice(1);
+  console.log(pageRequested, '<-- this is pageRequested');
+  var mimeTypeOut;
+  // var pathObjUrl = path.parse(url);
+  // console.log(pathObjUrl, '<-- this is pathObjUrl, look at base');
+  // var pageRequested = pathObjUrl.base;
+  // console.log(pageRequested, '<-- this is pageRequested');
+  // console.log(pageRequested, '<-- this is pageRequested after index fix?');
+
+  // var mimeType = pathObjUrl.ext;
   var publicUrl = path.join('./public/', pageRequested);
   var archivesUrl = path.join('./archives/', pageRequested);
   console.log(publicUrl);
@@ -18,7 +34,20 @@ exports.handleRequest = function (req, res) {
 
   // console.log(req.headers, ' <-- req.headers');
 
-  console.log(mimeType);
+  console.log(mimeTypeIn);
+  var mimeTypes = {
+      'html': 'text/html',
+      'css': 'text/css'
+    };
+
+  if (mimeTypeIn in mimeTypes) {
+    mimeTypeOut = mimeTypes[mimeTypeIn];
+    console.log('in mimeTypeIn true block', mimeTypeIn, mimeTypeOut);
+  }
+  else {
+    mimeTypeOut = 'text/plain';
+    console.log('in mimeTypeIn false block', mimeTypeIn, mimeTypeOut);
+  }
   // fs.access('./public/index.html', fs.R_OK, function (err) {
   //   if (err) {
   //     console.log(err, '<-- this error came from fs.access');
@@ -34,7 +63,7 @@ exports.handleRequest = function (req, res) {
     //   })
 
     //http://stackoverflow.com/questions/7268033/basic-static-file-server-in-nodejs
-  var fileStream = fs.createReadStream('./public/index.html');
+  var fileStream = fs.createReadStream(publicUrl);
 
   fileStream.on('error', function (error) {
     console.log(error, '<-- this error came from fileStream.on error (404)');
@@ -46,7 +75,7 @@ exports.handleRequest = function (req, res) {
   fileStream.on('open', function() {
     // console.log('In fileStream.on open');
 
-    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.writeHead(200, {'Content-Type': mimeTypeOut});
   });
 
   // fileStream.on('data', function() {
