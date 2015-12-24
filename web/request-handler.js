@@ -10,18 +10,22 @@ exports.handleRequest = function (req, res) {
   var url = req.url;
   var pathObjUrl = path.parse(url);
   var pageRequested = pathObjUrl.base;
-  var localPath = path.join('./public/', pageRequested);
-  console.log(localPath);
+  var mimeType = pathObjUrl.ext;
+  var publicUrl = path.join('./public/', pageRequested);
+  var archivesUrl = path.join('./archives/', pageRequested);
+  console.log(publicUrl);
+  console.log(archivesUrl);
+
   // console.log(req.headers, ' <-- req.headers');
 
-  // console.log(pathObjUrl.base);
-  fs.access('./public/index.html', fs.R_OK, function (err) {
-    if (err) {
-      console.log(err, '<-- this error came from fs.access');
-      throw err;
-    }
-    console.log('can find');
-  });
+  console.log(mimeType);
+  // fs.access('./public/index.html', fs.R_OK, function (err) {
+  //   if (err) {
+  //     console.log(err, '<-- this error came from fs.access');
+  //     throw err;
+  //   }
+  //   console.log('can find');
+  // });
     // // https://gist.github.com/dominictarr/2401787
     // request('http://sweet.as') //read from the internet
     //   .pipe(fs.createWriteStream(pathToFile)) //write to disk as data arrives.
@@ -35,12 +39,12 @@ exports.handleRequest = function (req, res) {
   fileStream.on('error', function (error) {
     console.log(error, '<-- this error came from fileStream.on error (404)');
 
-    res.writeHead(404, { "Content-Type": "text/plain"});
-    res.end("file not found");
+    res.writeHead(404, {'Content-Type': 'text/plain'});
+    res.end('file not found');
   });
 
   fileStream.on('open', function() {
-    console.log('In fileStream.on open');
+    // console.log('In fileStream.on open');
 
     res.writeHead(200, {'Content-Type': 'text/html'});
   });
