@@ -1,7 +1,7 @@
 var path = require('path');
-var archive = require('../helpers/archive-helpers');
+var AH = require('../helpers/archive-helpers');
 // require more modules/folders here!
-var httpHelp = require("./http-helpers.js");
+var httpHelp = require('./http-helpers');
 var fs = require('fs');
 
 exports.handleRequest = function (req, res) {
@@ -40,6 +40,7 @@ exports.handleRequest = function (req, res) {
       req.on('end', function() {
         var urlGivenInBox = holderString.slice(4);
         console.log(urlGivenInBox, '<-- this is data in holderString, sliced at 4');
+        AH.addUrlToList(AH.paths.list, urlGivenInBox);
         var urlToFeedToPostStream = path.join('./archives/sites/', urlGivenInBox);
     // check if web address saved in sites.txt
       // if no, save web address

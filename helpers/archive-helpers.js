@@ -32,7 +32,11 @@ exports.readListOfUrls = function(pathToFile) {
 exports.isUrlInList = function(){
 };
 
-exports.addUrlToList = function(){
+exports.addUrlToList = function(fileToAddTo, dataToAdd){
+  fs.appendFile(fileToAddTo, dataToAdd, function (err) {
+    if (err) throw err;
+    console.log(dataToAdd + ' was appended to ' + fileToAddTo);
+  });
 };
 
 exports.isUrlArchived = function(){
