@@ -10,7 +10,7 @@ exports.handleRequest = function (req, res) {
   var url = req.url;
   var pathObjUrl = path.parse(url);
   var pageRequested;
-  if (url === '/') {
+  if (req.method === 'GET' && url === '/' || url === 'index.htm') {
     pageRequested = 'index.html';
   }
   else {
@@ -32,12 +32,51 @@ exports.handleRequest = function (req, res) {
   console.log(publicUrl);
   console.log(archivesUrl);
 
-  // console.log(req.headers, ' <-- req.headers');
+  if (req.method === 'POST') {
+    var holderString = '';
+      req.on('data', function(data) {
+          holderString += data;
+      });
+      req.on('end', function() {
+        var urlGivenInBox = holderString.slice(4);
+        console.log(urlGivenInBox, '<-- this is data in holderString, sliced at 4');
+        var urlToFeedToPostStream = path.join('./archives/sites/', urlGivenInBox);
+    // check if web address saved in sites.txt
+      // if no, save web address
+
+    // check if website in archives/sites/
+      // if no, call 302 to loading.html (303 more technically correct)
+      // if yes, call 302, redirect to that site
+        var postStream = fs.createReadStream(urlToFeedToPostStream);
+
+        postStream.on('error', function (error) {
+          console.log(error, '<-- this error came from postStream.on error');
+
+          res.writeHead(303, {'Content-Type': 'text/html', 'Location': 'public/loading.html'});
+          res.end('file not found');
+        });
+
+        postStream.on('open', function() {
+          console.log('In postStream.on open');
+
+          res.writeHead(301, {'Content-Type': 'text/html'});
+        });
+
+        postStream.on('end', function() {
+          console.log('sent file Post');
+        });
+
+        postStream.pipe(res);
+
+    });
+  }
+
 
   console.log(mimeTypeIn);
   var mimeTypes = {
       'html': 'text/html',
-      'css': 'text/css'
+      'css': 'text/css',
+      'ico': 'image/x-icon'
     };
 
   if (mimeTypeIn in mimeTypes) {
@@ -85,13 +124,7 @@ exports.handleRequest = function (req, res) {
   // });
 
   fileStream.on('end', function() {
-    console.log('sent file ');
-    // res.write(fileToDeliver, 'binary', function(err) {
-    //   if (err) {
-    //     // console.log(err, '<-- this error is from the 200 case of res.write');
-    //     throw err;
-    //   }
-    // });
+    console.log('sent file ' + publicUrl);
   });
 
   fileStream.pipe(res);
@@ -99,48 +132,4 @@ exports.handleRequest = function (req, res) {
 //streams open (sometimes), then data, then end
 //pipe sends stuff along as it happens
 
-  //   fs.readFile('./public/index.html', 'binary', function(err, fileToDeliver) {
-  //     if(err) {
-  //       res.writeHead(500, {'Content-Type': 'text/plain'});
-  //       console.log(err, '<-- this error came from fs.readFile');
-  //       res.write(err + "\n");
-  //       res.end();
-  //       return;
-  //     }
-  //     console.log(fileToDeliver, '<-- the fileToDeliver from fs.readFile');
-
-  //     res.writeHead(200);
-  //     res.write(fileToDeliver, 'binary', function(err) {
-  //       if (err) {
-  //         // console.log(err, '<-- this error is from the 200 case of res.write');
-  //         throw err;
-  //       }
-  //       res.end();
-  //     });
-  //   });
-  // });
-
-
-
-  // if (req.method === 'GET') {
-  //   var fileStream = fs.createReadStream('./public/index.html');
-  //   console.log('in opened filestream?');
-
-  //   fileStream.on('error', function (error) {
-  //       res.writeHead(404, { "Content-Type": "text/plain"});
-  //       res.end("file not found");
-  //   });
-  //   fileStream.on('open', function() {
-  //       res.writeHead(200, {'Content-Type': 'text/html'});
-  //   });
-  //   fileStream.on('end', function() {
-  //       console.log('sent file ' + filename);
-  //   });
-  //   fileStream.pipe(res);
-  //   // res.end('./public/index.html');
-  // }
-
-  // res.end(archive.paths.list);
-
-  // res.end();
 };
