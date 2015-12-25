@@ -29,8 +29,13 @@ exports.handleRequest = function (req, res) {
   // var mimeType = pathObjUrl.ext;
   var publicUrl = path.join('./public/', pageRequested);
   var archivesUrl = path.join('./archives/', pageRequested);
-  console.log(publicUrl);
-  console.log(archivesUrl);
+  // console.log(publicUrl);
+  // console.log(archivesUrl);
+  console.log(AH.readListOfUrls(AH.paths.list, function(data) {
+          console.log(data, 'filling in cb in 35 of req handler');
+        }), 'logging readListOfUrls in 36 of rh');
+
+  // console.log(AH.isUrlInList(AH.paths.list, pageRequested), 'is url in list');
 
   if (req.method === 'POST') {
     var holderString = '';
@@ -40,7 +45,8 @@ exports.handleRequest = function (req, res) {
       req.on('end', function() {
         var urlGivenInBox = holderString.slice(4);
         console.log(urlGivenInBox, '<-- this is data in holderString, sliced at 4');
-        AH.addUrlToList(AH.paths.list, urlGivenInBox);
+        var urlToAppend = urlGivenInBox + '\n';
+        AH.addUrlToList(AH.paths.list, urlToAppend);
         var urlToFeedToPostStream = path.join('./archives/sites/', urlGivenInBox);
     // check if web address saved in sites.txt
       // if no, save web address
@@ -73,7 +79,7 @@ exports.handleRequest = function (req, res) {
   }
 
 
-  console.log(mimeTypeIn);
+  // console.log(mimeTypeIn);
   var mimeTypes = {
       'html': 'text/html',
       'css': 'text/css',
