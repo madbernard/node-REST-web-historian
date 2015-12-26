@@ -64,8 +64,41 @@ exports.addUrlToList = function(fileToAddTo, dataToAdd){
   });
 };
 
-exports.isUrlArchived = function(){
+exports.isUrlArchived = function(pathToDir, urlPlusHtmlExt, callback){
+  fs.readdir(pathToDir, function(err, extantFileArray){
+    if (err) {
+      return callback(err);
+    }
+    // once this is complete, it will have the extantFileArray
+    // I'd like to compare that to a url
+    console.log(extantFileArray, 'in isUrlArchived, this is extantFileArray');
+    var found = _.contains(extantFileArray, urlPlusHtmlExt);
+    callback(null, found);
+  });
+  // Asynchronous readdir(3). Reads the contents of a directory. The callback gets two arguments (err, files) where files is an array of the names of the files in the directory excluding '.' and '..'.
 };
 
 exports.downloadUrls = function(){
 };
+
+
+  // var postStream = fs.createReadStream(urlToFeedToPostStream);
+
+  // postStream.on('error', function (error) {
+  //   console.log(error, '<-- this error came from postStream.on error');
+
+  //   res.writeHead(303, {'Content-Type': 'text/html', 'Location': 'public/loading.html'});
+  //   res.end('file not found');
+  // });
+
+  // postStream.on('open', function() {
+  //   console.log('In postStream.on open');
+
+  //   res.writeHead(301, {'Content-Type': 'text/html'});
+  // });
+
+  // postStream.on('end', function() {
+  //   console.log('sent file Post');
+  // });
+
+  // postStream.pipe(res);

@@ -10,7 +10,7 @@ exports.handleRequest = function (req, res) {
   var url = req.url;
   var pathObjUrl = path.parse(url);
   var pageRequested;
-  if (req.method === 'GET' && url === '/' || url === 'index.htm') {
+  if (req.method === 'GET' && url === '/' || req.method === 'GET' && url === '/index.htm') {
     pageRequested = 'index.html';
   }
   else {
@@ -35,10 +35,15 @@ exports.handleRequest = function (req, res) {
   //         console.log(data, 'filling in cb in 35 of req handler');
   //       }), 'logging readListOfUrls in 36 of rh');
 
-  console.log(AH.isUrlInList(AH.paths.list, 'why6.com', function(err, booData){
+  AH.isUrlInList(AH.paths.list, 'why6.com', function(err, booData){
     if (err) throw err;
-    console.log(booData, ' <-- this is the boolean hauled out of the callback hell');
-  }), 'is url in list');
+    console.log(booData, ' <-- this is the boolean hauled out of the callback chain');
+  });
+
+  AH.isUrlArchived(AH.paths.archivedSites, 'google.com.html', function(err, booData){
+    if (err) throw err;
+    console.log(booData, ' <-- this is the boolean checking if google is archived');
+  });
 
   if (req.method === 'POST') {
     var holderString = '';
