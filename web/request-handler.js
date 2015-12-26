@@ -31,11 +31,14 @@ exports.handleRequest = function (req, res) {
   var archivesUrl = path.join('./archives/', pageRequested);
   // console.log(publicUrl);
   // console.log(archivesUrl);
-  console.log(AH.readListOfUrls(AH.paths.list, function(data) {
-          console.log(data, 'filling in cb in 35 of req handler');
-        }), 'logging readListOfUrls in 36 of rh');
+  // console.log(AH.readListOfUrls(AH.paths.list, function(err, data) {
+  //         console.log(data, 'filling in cb in 35 of req handler');
+  //       }), 'logging readListOfUrls in 36 of rh');
 
-  // console.log(AH.isUrlInList(AH.paths.list, pageRequested), 'is url in list');
+  console.log(AH.isUrlInList(AH.paths.list, 'why6.com', function(err, booData){
+    if (err) throw err;
+    console.log(booData, ' <-- this is the boolean hauled out of the callback hell');
+  }), 'is url in list');
 
   if (req.method === 'POST') {
     var holderString = '';

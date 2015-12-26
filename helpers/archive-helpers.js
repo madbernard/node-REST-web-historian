@@ -25,18 +25,36 @@ exports.initialize = function(pathsObj){
 // The following function names are provided to you to suggest how you might
 // modularize your code. Keep it clean!
 
+// readListOfUrls is going to take the data it eventually gets, and run a callback on it
 exports.readListOfUrls = function(pathToFile, callback) {
   fs.readFile(pathToFile, function(err, data){
-    if (err) throw err;
-    console.log(data.toString(), ' <-- this is the data to String from readListOfUrls');
+    if (err) {
+      return callback(err);
+    }
+    // console.log(data.toString(), ' <-- this is the data to String from readListOfUrls');
     var arrayed = data.toString().split(/\r?\n/);
-    console.log(data, ' <-- this is the data from readListOfUrls');
-    return callback(arrayed);
+    // console.log(data, ' <-- this is the data from readListOfUrls');
+    callback(null, arrayed);
   });
 };
 
-exports.isUrlInList = function(pathToFile, urlInQuestion){
-  return exports.readListOfUrls(pathToFile, _.contains())
+// callback that has err and data expects to be called once, either with err or with data
+// once one thing has an async callback pattern, everything that uses it needs an async callback pattern
+// don't need returns because the callback takes care of managing information flow
+// isUrlInList is going to take the data it eventually gets and run a callback on it
+// callbacks are like oven mitts, async data like hot potato
+
+exports.isUrlInList = function(pathToFile, urlInQuestion, callback){
+  exports.readListOfUrls(pathToFile, function(err, data){
+    if (err) {
+      return callback(err);
+    }
+
+    // console.log(data, ' <-- this is data as seen in isUrlInList');
+    var boo = _.contains(data, urlInQuestion);
+    // console.log(boo, ' <-- this is the contains result in isUrlInList');
+    callback(null, boo);
+  });
 };
 
 exports.addUrlToList = function(fileToAddTo, dataToAdd){
