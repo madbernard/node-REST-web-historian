@@ -5,7 +5,7 @@ var httpHelp = require('./http-helpers');
 var fs = require('fs');
 
 exports.handleRequest = function (req, res) {
-  console.log(req.method + ' <-- req.method', req.url + ' <-- req.url');
+  console.log('============================================', req.method + ' <-- req.method', req.url + ' <-- req.url');
 
   var url = req.url;
   var pathObjUrl = path.parse(url);
@@ -37,7 +37,7 @@ exports.handleRequest = function (req, res) {
 
   AH.isUrlInList(AH.paths.list, 'why6.com', function(err, booData){
     if (err) throw err;
-    console.log(booData, ' <-- this is the boolean hauled out of the callback chain');
+    console.log(booData, ' <-- this is the boolean hauled out of the isUrlInList callback chain');
   });
 
   AH.isUrlArchived(AH.paths.archivedSites, 'google.com.html', function(err, booData){
@@ -52,7 +52,7 @@ exports.handleRequest = function (req, res) {
       });
       req.on('end', function() {
         var urlGivenInBox = holderString.slice(4);
-        console.log(urlGivenInBox, '<-- this is data in holderString, sliced at 4');
+        console.log(urlGivenInBox, '<-- this is url typed into form, sliced at 4');
         var urlToAppend = urlGivenInBox + '\n';
         AH.addUrlToList(AH.paths.list, urlToAppend);
         var urlToFeedToPostStream = path.join('./archives/sites/', urlGivenInBox);

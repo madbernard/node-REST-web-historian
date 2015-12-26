@@ -12,8 +12,8 @@ var httpR = require('http-request');
 
 exports.paths = {
   siteAssets: path.join(__dirname, '../web/public'),
-  archivedSites: path.join(__dirname, '../archives/sites'),
-  list: path.join(__dirname, '../archives/sites.txt')
+  archivedSites: path.join(__dirname, '../web/archives/sites'),
+  list: path.join(__dirname, '../web/archives/sites.txt')
 };
 
 // Used for stubbing paths for tests, do not modify
@@ -32,7 +32,7 @@ exports.readListOfUrls = function(pathToFile, callback) {
     if (err) {
       return callback(err);
     }
-    // console.log(data.toString(), ' <-- this is the data to String from readListOfUrls');
+    console.log(data.toString(), ' <-- this is the data to String from readListOfUrls');
     var arrayed = data.toString().split(/\r?\n/);
     // console.log(data, ' <-- this is the data from readListOfUrls');
     callback(null, arrayed);
@@ -85,27 +85,37 @@ exports.downloadUrls = function(){
     if (err) throw err;
     arrayedListedUrls.forEach(function(url){
       var urlPlusHtml = url + '.html';
+      console.log(urlPlusHtml, 'in downloadUrls/readListOfUrls, this is url + html');
       exports.isUrlArchived(exports.paths.archivedSites, urlPlusHtml, function(err, isFound){
         var getThis;
         if (err) throw err;
         if (!isFound) {
           getThis = urlPlusHtml.slice(0, -5);
+          if (getThis === '') {
+            // this handles ignoring the newline \n character at the end of every sites.txt
+            return;
+          }
         }
+        else {
+          // this means if we found the site in the archives/sites dir, we won't go get it again
+          return;
+        }
+        console.log(urlPlusHtml, 'in downloadUrls/isUrlArchived, this is url parameter');
+        console.log(getThis, 'in downloadUrls/isUrlArchived, this getThis (sliced if not found)');
+        var getThisDecoded = decodeURIComponent(getThis);
+        console.log(getThisDecoded, 'in downloadUrls/isUrlArchived, getThis decoded?');
         var optionsObj = {
-          url: getThis,
-          stream: true
+          url: getThisDecoded
         };
+        console.log(optionsObj.url, 'in downloadUrls, this is optionsObj.url');
+        var pathToFileToMake = exports.paths.archivedSites + '/' + urlPlusHtml;
 
-        var pathToFileToMake = exports.paths.archivedSites + urlPlusHtml;
-        var fileToMake = fs.createWriteStream(pathToFileToMake);
-
-        http.get(optionsObj, fileToMake, function (err, res) {
+        httpR.get(optionsObj, pathToFileToMake, function (err, res) {
           if (err) {
             console.error(err);
             return;
           }
           console.log(res.code, res.headers, res.file);
-          fileToMake.pipe(res);
         });
 
       });
