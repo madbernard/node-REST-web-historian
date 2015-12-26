@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var httpR = require('http-request');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -79,8 +80,50 @@ exports.isUrlArchived = function(pathToDir, urlPlusHtmlExt, callback){
 };
 
 exports.downloadUrls = function(){
+  // make list of urls in text file that are not in dir
+  exports.readListOfUrls(exports.paths.list, function(err, arrayedListedUrls){
+    if (err) throw err;
+    arrayedListedUrls.forEach(function(url){
+      var urlPlusHtml = url + '.html';
+      exports.isUrlArchived(exports.paths.archivedSites, urlPlusHtml, function(err, isFound){
+        var getThis;
+        if (err) throw err;
+        if (!isFound) {
+          getThis = urlPlusHtml.slice(0, -5);
+        }
+        var optionsObj = {
+          url: getThis,
+          stream: true
+        };
+
+        var pathToFileToMake = exports.paths.archivedSites + urlPlusHtml;
+        var fileToMake = fs.createWriteStream(pathToFileToMake);
+
+        http.get(optionsObj, fileToMake, function (err, res) {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          console.log(res.code, res.headers, res.file);
+          fileToMake.pipe(res);
+        });
+
+      });
+    });
+  });
+  // while list is populated
+  //run get, pipe to writeStream
 };
 
+// HTTP GET method wrapper
+// Parameters:
+// Name  Type  Description
+// options module:request~options | String The options Object taken by the Request constructor, filtered by module:tools.shortHand. options.method = 'GET' and it can not be overridden. If a String is passed, it is handled as options = {url: options}
+// file  String | null Optional; specify a filesystem path to save the response body as file instead of Buffer. Passing null turns off the data listeners
+// callback  module:main~callback  Completion callback
+
+// optionsObj needs to have url filled in in AH
+// http://saltwaterc.github.io/http-request/module-request.html#options
 
   // var postStream = fs.createReadStream(urlToFeedToPostStream);
 
