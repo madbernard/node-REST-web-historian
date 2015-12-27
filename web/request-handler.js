@@ -20,32 +20,20 @@ exports.handleRequest = function (req, res) {
   var mimeTypeIn = path.parse(pageRequested).ext.slice(1);
   console.log(pageRequested, '<-- this is pageRequested');
   var mimeTypeOut;
-  // var pathObjUrl = path.parse(url);
-  // console.log(pathObjUrl, '<-- this is pathObjUrl, look at base');
-  // var pageRequested = pathObjUrl.base;
-  // console.log(pageRequested, '<-- this is pageRequested');
-  // console.log(pageRequested, '<-- this is pageRequested after index fix?');
+  console.log(pathObjUrl, '<-- this is pathObjUrl, look at base');
 
   // var mimeType = pathObjUrl.ext;
   var publicUrl = path.join(AH.paths.siteAssets, pageRequested);
-  var archivesUrl = path.join(AH.paths.archivedSites, pageRequested);
-  var archivesUrlPlusHtml = archivesUrl + '.html';
   // console.log(publicUrl);
-  console.log(archivesUrl);
-  console.log(archivesUrlPlusHtml);
+
   // console.log(AH.readListOfUrls(AH.paths.list, function(err, data) {
   //         console.log(data, 'filling in cb in 35 of req handler');
   //       }), 'logging readListOfUrls in 36 of rh');
 
-  AH.isUrlInList(AH.paths.list, 'why6.com', function(err, booData){
-    if (err) throw err;
-    console.log(booData, ' <-- this is the boolean hauled out of the isUrlInList callback chain');
-  });
-
-  AH.isUrlArchived(AH.paths.archivedSites, 'google.com.html', function(err, booData){
-    if (err) throw err;
-    console.log(booData, ' <-- this is the boolean checking if google is archived');
-  });
+  // AH.isUrlInList(AH.paths.list, 'why6.com', function(err, booData){
+  //   if (err) throw err;
+  //   console.log(booData, ' <-- this is the boolean hauled out of the isUrlInList callback chain');
+  // });
 
   if (req.method === 'POST') {
     var holderString = '';
@@ -66,36 +54,39 @@ exports.handleRequest = function (req, res) {
           AH.addUrlToList(AH.paths.list, urlToAppend);
         }
         // check if website in archives/sites/
-        if (AH.isUrlArchived(AH.paths.archivedSites, 'google.com.html', function(err, booData){
-          if (err) throw err;
-          console.log(booData, ' <-- isUrlArchived result');
-          return booData;
-        })) {
+          // if no, call 302 to loading.html (303 more technically correct)
           // if yes, call 302, redirect to that site
 
-        }
-        else {
-          // if no, call 302 to loading.html (303 more technically correct)
+        var archivedUrl = path.join(AH.paths.archivedSites, urlGivenInBox);
+        var archivedUrlPlusHtml = archivedUrl + '.html';
 
-        }
-        var urlToFeedToPostStream = path.join('./archives/sites/', urlGivenInBox);
-        var postStream = fs.createReadStream(urlToFeedToPostStream);
+        var postStream = fs.createReadStream(archivedUrlPlusHtml);
+        console.log(archivedUrlPlusHtml);
 
         postStream.on('error', function (error) {
-          console.log(error, '<-- this error came from postStream.on error, over to loading');
+          // error = it didn't find the web/archives/sites/z-amber.com.html file... file not archived
+          console.log(error, '<-- postStream.on error, file is not stored locally, over to loading');
 
-          res.writeHead(303, {'Content-Type': 'text/html', 'Location': 'public/loading.html'});
+          res.writeHead(303,
+            { 'Content-Type': 'text/html',
+              'Location'    : path.join(AH.paths.archivedSites, 'loading.html')
+            });
           res.end('file not found');
         });
 
         postStream.on('open', function() {
-          console.log('In postStream.on open');
+          // open = it found the web/archives/sites/z-amber.com.html file... file archived
+          console.log('In postStream.on open', archivedUrlPlusHtml);
 
-          res.writeHead(301, {'Content-Type': 'text/html'});
+          res.writeHead(301,
+            { 'Content-Type': 'text/html',
+              'Location'    : archivedUrlPlusHtml
+            });
+          res.end('the archived file is delivered');
         });
 
         postStream.on('end', function() {
-          console.log('sent file Post');
+          console.log('sent file Post', archivedUrlPlusHtml);
         });
 
         postStream.pipe(res);
@@ -120,30 +111,34 @@ exports.handleRequest = function (req, res) {
     console.log('in mimeTypeIn false block', mimeTypeIn, mimeTypeOut);
   }
 
-    //http://stackoverflow.com/questions/7268033/basic-static-file-server-in-nodejs
+  //http://stackoverflow.com/questions/7268033/basic-static-file-server-in-nodejs
+  var giveToArchiveStream = path.join(AH.paths.archivedSites, pathObjUrl.base);
   var fileStream = fs.createReadStream(publicUrl);
 
   fileStream.on('error', function (error) {
     console.log(error, '<-- this error came from fileStream.on error');
+    // the requested page is not in public, is it in archives?
+    var archiveStream = fs.createReadStream(giveToArchiveStream);
 
-    var fileStreamArchived = fs.createReadStream(archivesUrlPlusHtml);
-    fileStreamArchived.on('error', function (error) {
-      console.log(error, '<-- this error came from fileStreamArchived.on error');
+    archiveStream.on('error', function (error) {
+      console.log(error, '<-- this error came from archiveStream.on error');
 
       res.writeHead(404, {'Content-Type': 'text/plain'});
       res.end('file not found');
     });
 
-    fileStreamArchived.on('open', function() {
-      // console.log('In fileStream.on open');
+    archiveStream.on('open', function() {
+      // console.log('In archiveStream.on open');
+
       res.writeHead(200, {'Content-Type': mimeTypeOut});
     });
 
-    fileStreamArchived.on('end', function() {
-      console.log('sent file ' + archivesUrlPlusHtml);
+    archiveStream.on('end', function() {
+      console.log('sent file ' + giveToArchiveStream);
     });
 
-    fileStreamArchived.pipe(res);
+    archiveStream.pipe(res);
+
   });
 
   fileStream.on('open', function() {
