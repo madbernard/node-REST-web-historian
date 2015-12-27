@@ -85,7 +85,7 @@ exports.downloadUrls = function(){
     if (err) throw err;
     arrayedListedUrls.forEach(function(url){
       var urlPlusHtml = url + '.html';
-      // console.log(urlPlusHtml, 'in downloadUrls/readListOfUrls, this is url + html');
+      console.log(urlPlusHtml, 'in downloadUrls/readListOfUrls, this is url + html');
       exports.isUrlArchived(exports.paths.archivedSites, urlPlusHtml, function(err, isFound){
         var getThis;
         if (err) throw err;

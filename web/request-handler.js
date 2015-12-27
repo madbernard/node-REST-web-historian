@@ -20,7 +20,7 @@ exports.handleRequest = function (req, res) {
   var mimeTypeIn = path.parse(pageRequested).ext.slice(1);
   console.log(pageRequested, '<-- this is pageRequested');
   var mimeTypeOut;
-  console.log(pathObjUrl, '<-- this is pathObjUrl, look at base');
+  // console.log(pathObjUrl, '<-- this is pathObjUrl, look at base');
 
   // var mimeType = pathObjUrl.ext;
   var publicUrl = path.join(AH.paths.siteAssets, pageRequested);
@@ -45,7 +45,7 @@ exports.handleRequest = function (req, res) {
         console.log(urlGivenInBox, '<-- this is url typed into form, sliced at 4');
         var urlToAppend = urlGivenInBox + '\n';
         // check if web address saved in sites.txt
-        if (AH.isUrlInList(AH.paths.list, urlGivenInBox, function(err, booData){
+        if (!AH.isUrlInList(AH.paths.list, urlGivenInBox, function(err, booData){
           if (err) throw err;
           console.log(booData, ' <-- isUrlInList result');
           return booData;
