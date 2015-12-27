@@ -27,10 +27,12 @@ exports.handleRequest = function (req, res) {
   // console.log(pageRequested, '<-- this is pageRequested after index fix?');
 
   // var mimeType = pathObjUrl.ext;
-  var publicUrl = path.join('./public/', pageRequested);
-  var archivesUrl = path.join('./archives/', pageRequested);
+  var publicUrl = path.join(AH.paths.siteAssets, pageRequested);
+  var archivesUrl = path.join(AH.paths.archivedSites, pageRequested);
+  var archivesUrlPlusHtml = archivesUrl + '.html';
   // console.log(publicUrl);
-  // console.log(archivesUrl);
+  console.log(archivesUrl);
+  console.log(archivesUrlPlusHtml);
   // console.log(AH.readListOfUrls(AH.paths.list, function(err, data) {
   //         console.log(data, 'filling in cb in 35 of req handler');
   //       }), 'logging readListOfUrls in 36 of rh');
@@ -54,18 +56,33 @@ exports.handleRequest = function (req, res) {
         var urlGivenInBox = holderString.slice(4);
         console.log(urlGivenInBox, '<-- this is url typed into form, sliced at 4');
         var urlToAppend = urlGivenInBox + '\n';
-        AH.addUrlToList(AH.paths.list, urlToAppend);
-        var urlToFeedToPostStream = path.join('./archives/sites/', urlGivenInBox);
-    // check if web address saved in sites.txt
-      // if no, save web address
+        // check if web address saved in sites.txt
+        if (AH.isUrlInList(AH.paths.list, urlGivenInBox, function(err, booData){
+          if (err) throw err;
+          console.log(booData, ' <-- isUrlInList result');
+          return booData;
+        })) {
+          // if no, save web address
+          AH.addUrlToList(AH.paths.list, urlToAppend);
+        }
+        // check if website in archives/sites/
+        if (AH.isUrlArchived(AH.paths.archivedSites, 'google.com.html', function(err, booData){
+          if (err) throw err;
+          console.log(booData, ' <-- isUrlArchived result');
+          return booData;
+        })) {
+          // if yes, call 302, redirect to that site
 
-    // check if website in archives/sites/
-      // if no, call 302 to loading.html (303 more technically correct)
-      // if yes, call 302, redirect to that site
+        }
+        else {
+          // if no, call 302 to loading.html (303 more technically correct)
+
+        }
+        var urlToFeedToPostStream = path.join('./archives/sites/', urlGivenInBox);
         var postStream = fs.createReadStream(urlToFeedToPostStream);
 
         postStream.on('error', function (error) {
-          console.log(error, '<-- this error came from postStream.on error');
+          console.log(error, '<-- this error came from postStream.on error, over to loading');
 
           res.writeHead(303, {'Content-Type': 'text/html', 'Location': 'public/loading.html'});
           res.end('file not found');
@@ -102,28 +119,31 @@ exports.handleRequest = function (req, res) {
     mimeTypeOut = 'text/plain';
     console.log('in mimeTypeIn false block', mimeTypeIn, mimeTypeOut);
   }
-  // fs.access('./public/index.html', fs.R_OK, function (err) {
-  //   if (err) {
-  //     console.log(err, '<-- this error came from fs.access');
-  //     throw err;
-  //   }
-  //   console.log('can find');
-  // });
-    // // https://gist.github.com/dominictarr/2401787
-    // request('http://sweet.as') //read from the internet
-    //   .pipe(fs.createWriteStream(pathToFile)) //write to disk as data arrives.
-    //   .on('end', function () {
-    //      //done
-    //   })
 
     //http://stackoverflow.com/questions/7268033/basic-static-file-server-in-nodejs
   var fileStream = fs.createReadStream(publicUrl);
 
   fileStream.on('error', function (error) {
-    console.log(error, '<-- this error came from fileStream.on error (404)');
+    console.log(error, '<-- this error came from fileStream.on error');
 
-    res.writeHead(404, {'Content-Type': 'text/plain'});
-    res.end('file not found');
+    var fileStreamArchived = fs.createReadStream(archivesUrlPlusHtml);
+    fileStreamArchived.on('error', function (error) {
+      console.log(error, '<-- this error came from fileStreamArchived.on error');
+
+      res.writeHead(404, {'Content-Type': 'text/plain'});
+      res.end('file not found');
+    });
+
+    fileStreamArchived.on('open', function() {
+      // console.log('In fileStream.on open');
+      res.writeHead(200, {'Content-Type': mimeTypeOut});
+    });
+
+    fileStreamArchived.on('end', function() {
+      console.log('sent file ' + archivesUrlPlusHtml);
+    });
+
+    fileStreamArchived.pipe(res);
   });
 
   fileStream.on('open', function() {
