@@ -32,7 +32,7 @@ exports.readListOfUrls = function(pathToFile, callback) {
     if (err) {
       return callback(err);
     }
-    console.log(data.toString(), ' <-- this is the data to String from readListOfUrls');
+    // console.log(data.toString(), ' <-- this is the data to String from readListOfUrls');
     var arrayed = data.toString().split(/\r?\n/);
     // console.log(data, ' <-- this is the data from readListOfUrls');
     callback(null, arrayed);
@@ -72,7 +72,7 @@ exports.isUrlArchived = function(pathToDir, urlPlusHtmlExt, callback){
     }
     // once this is complete, it will have the extantFileArray
     // I'd like to compare that to a url
-    console.log(extantFileArray, 'in isUrlArchived, this is extantFileArray');
+    // console.log(extantFileArray, 'in isUrlArchived, this is extantFileArray');
     var found = _.contains(extantFileArray, urlPlusHtmlExt);
     callback(null, found);
   });
@@ -85,7 +85,7 @@ exports.downloadUrls = function(){
     if (err) throw err;
     arrayedListedUrls.forEach(function(url){
       var urlPlusHtml = url + '.html';
-      console.log(urlPlusHtml, 'in downloadUrls/readListOfUrls, this is url + html');
+      // console.log(urlPlusHtml, 'in downloadUrls/readListOfUrls, this is url + html');
       exports.isUrlArchived(exports.paths.archivedSites, urlPlusHtml, function(err, isFound){
         var getThis;
         if (err) throw err;
@@ -100,10 +100,10 @@ exports.downloadUrls = function(){
           // this means if we found the site in the archives/sites dir, we won't go get it again
           return;
         }
-        console.log(urlPlusHtml, 'in downloadUrls/isUrlArchived, this is url parameter');
+        // console.log(urlPlusHtml, 'in downloadUrls/isUrlArchived, this is url parameter');
         console.log(getThis, 'in downloadUrls/isUrlArchived, this getThis (sliced if not found)');
         var getThisDecoded = decodeURIComponent(getThis);
-        console.log(getThisDecoded, 'in downloadUrls/isUrlArchived, getThis decoded?');
+        // console.log(getThisDecoded, 'in downloadUrls/isUrlArchived, getThis decoded?');
         var optionsObj = {
           url: getThisDecoded
         };
